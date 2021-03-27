@@ -14,6 +14,8 @@ class Drawer:
         self.black = np.array([0,0,0])
         self.indy = cv2.imread("./img/indy.png", cv2.IMREAD_UNCHANGED)
         self.indy  = cv2.resize(self.indy, (cell_width, cell_height))
+        self.indy_rotation_dict = {'N': cv2.ROTATE_180, 'S': None, 'W':cv2.ROTATE_90_CLOCKWISE , 'E':cv2.ROTATE_90_COUNTERCLOCKWISE}
+
         self.wall = np.zeros((cell_height, cell_width,4), dtype='uint8') 
         self.wall[:,:] = np.array((24,16,88,255))
         self.unknown = np.zeros((cell_height, cell_width,4), dtype='uint8') 
@@ -91,18 +93,19 @@ class Drawer:
         img[:,:] = self.white
 
         for cell in cells:
-            # row_i, col_i = cell
-            # img_cell = img[row_i*self.cell_height:row_i*self.cell_height+self.cell_height, col_i*self.cell_width:col_i*self.cell_width+self.cell_width]
             cell_type = cells[cell]
             
-            if cell_type == 'indy':
-                self.draw_cell(img, self.indy, *cell)
-            elif cell_type == 'wall':
+            if cell_type == 'wall':
                 self.draw_cell(img, self.wall, *cell)
             elif cell_type == 'available':
                 pass
             elif cell_type == 'unknown':
                 self.draw_cell(img, self.unknown, *cell)
+            elif cell_type[0] == 'indy':
+                indy_img_rotated = self.indy
+                if self.indy_rotation_dict[cell_type[1]] is not None:
+                    indy_img_rotated = cv2.rotate(indy_img_rotated, self.indy_rotation_dict[cell_type[1]])
+                self.draw_cell(img, indy_img_rotated, *cell)
             else:
                 raise Exception("Should never happen.")
 
