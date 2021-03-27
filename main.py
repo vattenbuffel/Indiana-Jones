@@ -21,8 +21,8 @@ drawable_dicts = indy.past_drawable_dicts
 for dict_ in drawable_dicts:
     maze_img = drawer.generate_image(dict_)
     cv2.imshow("Maze", maze_img)
-    # k = cv2.waitKey(100)
-    k = cv2.waitKey(0)
+    k = cv2.waitKey(100)
+    # k = cv2.waitKey(0)
     if k == 27:
         break
 
