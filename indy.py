@@ -1,3 +1,6 @@
+import multiprocessing
+
+from networkx.exception import NetworkXNoPath
 from drawer import Drawer
 import numpy as np
 from numpy import random
@@ -6,24 +9,26 @@ from cell import Cell
 import networkx as nx
 
 class Indy:
-    def __init__(self, start_row, start_col, maze:Maze):
+    def __init__(self, start_row, start_col, maze:Maze, available_jobs,  indy_pos_list, cells, G, G_set):
         self.row = start_row
         self.start_col = start_col
         self.cur_pos = np.array([start_row, start_col])
         self.maze = maze
+        self.indy_pos_list = indy_pos_list
         
         self.dirs_dict = {'S':3*np.pi/2, 'W':2*np.pi/2, 'N':1*np.pi/2, 'E':0}
         self.dir = np.random.choice(['S','N','W','E'])
-        self.cells = {location: Cell(*location, "unknown") for location in maze.cells}
-        self.available_jobs = []
+        self.cells = cells
+        self.available_jobs = available_jobs
         self.path = []
-        self.G = nx.Graph()
-        self.G_set = set()
+        self.G = G
+        self.G_set = G_set
         self.update_graph(self.cur_pos)
         self.discover()
 
-        self.past_drawable_dicts = []
-        self.past_drawable_dicts.append(self.generate_drawable_dict())
+        self.indy_pos_list.append((self.cur_pos, self.dir))
+        # self.past_drawable_dicts = []
+        # self.past_drawable_dicts.append(self.generate_drawable_dict())
 
     def take_step(self):
         pos = self.path.pop(0)
@@ -67,7 +72,7 @@ class Indy:
         path = self.find_next_job()
         if path is False:
             return False
-        self.path.extend(path[1:])
+        self.path = list(path[1:])
 
     def update_graph(self, node):
         if tuple(node) in self.G_set:
@@ -102,16 +107,24 @@ class Indy:
         # Find the closest next job
         shortest_path = None
         shortest_dist = 1e10
+        best_goal_i = None
 
-        for goal in self.available_jobs:
-            path = nx.dijkstra_path(self.G, tuple(self.cur_pos), tuple(goal))
+        for i, goal in enumerate(self.available_jobs):
+            try:
+                path = nx.dijkstra_path(self.G, tuple(self.cur_pos), tuple(goal))
+            except NetworkXNoPath:
+                continue
             dist = len(path)
             if dist < shortest_dist:
                 shortest_path = path
-
-        return np.array(shortest_path)
-
+                best_goal_i = i
+                shortest_dist = dist
         
+        if best_goal_i is None:
+            return False
+            
+        del self.available_jobs[best_goal_i]
+        return np.array(shortest_path) 
 
     def update_dir(self, next_pos):
         movement = next_pos - self.cur_pos
@@ -126,7 +139,6 @@ class Indy:
         else:
             raise Exception("This should never happen.")
             
-
     def states_of_neighbours(self, cell_pos):
         positions_to_check = np.array([[0,1], [-1,0], [0,-1], [1,0]]) + cell_pos
         states = []
@@ -152,17 +164,33 @@ class Indy:
             except KeyError:
                 pass
         
-    def run(self):
+    def advance(self):
         done = False
-        while not done:
-            if len(self.path) == 0:
-                done = self.calc_next_goal()
-                if len(self.path) == 0: break
 
+
+        if len(self.path) == 0:
+            done = self.calc_next_goal()
+            if len(self.path) == 0: 
+                done = True
+        else:
+            # Check if the current goal is obsolete
+            state_of_goal_neighbours = self.states_of_neighbours(self.path[-1])
+            if not np.any(state_of_goal_neighbours == 'unknown'):
+                done = self.calc_next_goal()
+                if len(self.path) == 0: 
+                    done = True
+
+        if not done:
             self.take_step()
             self.discover()
-            if not done: 
-                self.past_drawable_dicts.append(self.generate_drawable_dict())
+            # if not done: 
+                # self.past_drawable_dicts.append(self.generate_drawable_dict())
+        self.indy_pos_list.append((self.cur_pos, self.dir))
+        
+        if done:
+            pass
+
+        return done
 
     def generate_drawable_dict(self):
         drawable_dict = {(cell.row, cell.col): cell.state for cell in self.cells.values()}
