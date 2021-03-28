@@ -2,6 +2,7 @@ try:
     import cv2
 except ModuleNotFoundError:
     print("You need to install opencv2. Try the command: pip3 install opencv-python")
+    exit(0)
 import numpy as np
 
 class Drawer:
@@ -43,7 +44,8 @@ class Drawer:
         assert row >= 0 and row < self.n_rows and row % 1 == 0, f"Row must be a positive integer smaller than {self.n_rows}. It is {row}."
         assert col >= 0 and col < self.n_cols and col % 1 == 0, f"col must be a positive integer smaller than {self.n_cols}. It is {col}."
         
-        self.overlay_transparent(img, img_to_draw, row*self.cell_height, col*self.cell_width)
+        # self.overlay_transparent(img, img_to_draw, row*self.cell_height, col*self.cell_width)
+        self.overlay_transparent(img, img_to_draw, col*self.cell_width, row*self.cell_height)
 
     @staticmethod
     def overlay_transparent(background_img, img_to_overlay_t, x, y, overlay_size=None):

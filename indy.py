@@ -9,10 +9,10 @@ from cell import Cell
 import networkx as nx
 
 class Indy:
-    def __init__(self, start_row, start_col, maze:Maze, available_jobs,  indy_pos_list, cells, G, G_set):
-        self.row = start_row
-        self.start_col = start_col
-        self.cur_pos = np.array([start_row, start_col])
+    def __init__(self, start_x, start_y, maze:Maze, available_jobs,  indy_pos_list, cells, G, G_set):
+        self.y = start_y
+        self.x = start_x
+        self.cur_pos = np.array([start_x, start_y])
         self.maze = maze
         self.indy_pos_list = indy_pos_list
         
@@ -26,7 +26,7 @@ class Indy:
         self.update_graph(self.cur_pos)
         self.discover()
 
-        self.indy_pos_list.append((self.cur_pos, self.dir))
+        self.indy_pos_list.append((np.flip(self.cur_pos), self.dir))
         # self.past_drawable_dicts = []
         # self.past_drawable_dicts.append(self.generate_drawable_dict())
 
@@ -49,7 +49,7 @@ class Indy:
         for pos in positions_to_check:
             try:
                 # Check if the cell is available
-                if self.cells[tuple(pos)].state == 'available':
+                if self.cells[tuple(np.flip(pos))].state == 'available':
                     # Check if the cell has unknown neighbours
                     neighbour_states = self.states_of_neighbours(pos)
                     if np.any(neighbour_states == 'unknown'):
@@ -130,12 +130,16 @@ class Indy:
         movement = next_pos - self.cur_pos
         if movement[0] == 1:
             self.dir = 'E'
+            # self.dir = 'S'
         elif movement[0] == -1:
             self.dir = 'W'
+            # self.dir = 'N'
         elif movement[1] == -1:
             self.dir = 'N'
+            # self.dir = 'W'
         elif movement[1] == 1:
             self.dir = 'S'
+            # self.dir = 'E'
         else:
             raise Exception("This should never happen.")
             
@@ -145,7 +149,7 @@ class Indy:
 
         for pos in positions_to_check:
             try:
-                states.append(self.cells[tuple(pos)].state)
+                states.append(self.cells[tuple(np.flip(pos))].state)
             except KeyError:
                 pass
         
@@ -155,10 +159,10 @@ class Indy:
         positions_to_discover = np.array([[1,0], [-1,0], [0,1], [0,-1]]) + self.cur_pos
         for pos in positions_to_discover:
             try:
-                maze_state = self.maze.cells[tuple(pos)].state
-                self.cells[tuple(pos)].state = maze_state
+                maze_state = self.maze.cells[tuple(np.flip(pos))].state
+                self.cells[tuple(np.flip(pos))].state = maze_state
 
-                if self.cells[tuple(pos)].state == "available":
+                if self.cells[tuple(np.flip(pos))].state == "available":
                     self.update_graph(pos)
                 
             except KeyError:
@@ -183,9 +187,8 @@ class Indy:
         if not done:
             self.take_step()
             self.discover()
-            # if not done: 
-                # self.past_drawable_dicts.append(self.generate_drawable_dict())
-        self.indy_pos_list.append((self.cur_pos, self.dir))
+            
+        self.indy_pos_list.append((np.flip(self.cur_pos), self.dir))
         
         if done:
             pass
@@ -194,5 +197,5 @@ class Indy:
 
     def generate_drawable_dict(self):
         drawable_dict = {(cell.row, cell.col): cell.state for cell in self.cells.values()}
-        drawable_dict[tuple(self.cur_pos)] = ('indy', self.dir)
+        drawable_dict[tuple(np.flip(self.cur_pos))] = ('indy', self.dir)
         return drawable_dict

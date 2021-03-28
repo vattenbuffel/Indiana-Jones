@@ -3,16 +3,16 @@ from maze import Maze
 from indymanager import IndyManager
 import cv2
     
-print("Hello!\nHow big should the sides of the maze should be:")
-n = input()
+print("Hello!\nHow big should the sides of the maze be? \nside = ", end="")
+n_rows = input()
 try:
-    n = float(n)
-    assert n % 1 == 0 and n > 0
-    n = int(n)
+    n_rows = float(n_rows)
+    assert n_rows % 1 == 0 and n_rows > 0
+    n_rows = int(n_rows)
 except:
     print("The side size must be a positive integer!")
     exit()
-print("How many Indys do you want?:")
+print("How many Indys do you want?\nI want: ", end="")
 n_indies = input()
 try:
     n_indies = float(n_indies)
@@ -22,11 +22,12 @@ except:
     print("The side size must be a positive integer!")
     exit()
 
-maze = Maze(n,n)
-indy_manager = IndyManager(n, n, maze, n_indies=n_indies)
+n_cols = int(2*n_rows)
+maze = Maze(n_cols, n_rows)
+indy_manager = IndyManager(n_cols, n_rows, maze, n_indies=n_indies)
 
-cell_size = 50 if n < 15 else 20
-drawer = Drawer(n,n,2,cell_size,cell_size)
+cell_size = 50 if n_rows < 15 else 20
+drawer = Drawer(n_rows,n_cols,2,cell_size,cell_size)
 
 drawable_dict = maze.generate_drawable_dict()
 # maze_img = drawer.generate_image(drawable_dict)

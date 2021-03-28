@@ -2,9 +2,9 @@ import numpy as np
 from cell import Cell
 
 class Maze:
-    def __init__(self, n_rows, n_cols):
-        self.n_rows = n_rows
-        self.n_cols = n_cols
+    def __init__(self, x_max, y_max):
+        self.x_max = x_max
+        self.y_max = y_max
         
         self.cells = None
         self.generate_maze()
@@ -16,7 +16,7 @@ class Maze:
         available_limit = 5 
         n_update_steps = np.random.randint(1,10)
 
-        cells = {(row, col): Cell(row, col, "wall" if np.random.random() < wall_factor else "available") for row in range(self.n_rows) for col in range(self.n_cols)}
+        cells = {(row, col): Cell(row, col, "wall" if np.random.random() < wall_factor else "available") for row in range(self.y_max) for col in range(self.x_max)}
         for i in range(n_update_steps):
             cells = self.update_alive_death(cells, wall_limit, available_limit)
         self.cells = cells
@@ -35,9 +35,10 @@ class Maze:
         new_cells = cells.copy()
 
         surrounding_cells = np.array([[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]])
-        for row_i in range(self.n_rows):
-            for col_i in range(self.n_cols):
-                cur_cell = np.array([col_i, row_i])
+        for y in range(self.y_max):
+            for x in range(self.x_max):
+                # cur_cell = np.array([x, y])
+                cur_cell = np.array([y, x])
                 n_alive_neighbours = 0
                 for surrounding_cell in surrounding_cells:
                     try:

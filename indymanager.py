@@ -6,10 +6,10 @@ try:
     import networkx as nx
 except ModuleNotFoundError:
     print("You need to install networkx. Try the command: pip3 install networkx")
-
+    exit(0)
 
 class IndyManager:
-    def __init__(self, n_row, n_col, maze:Maze, n_indies = 2):
+    def __init__(self, x_max, y_max, maze:Maze, n_indies = 2):
         self.maze = maze
         self.available_jobs = []
         self.indy_pos_list = []
@@ -22,10 +22,10 @@ class IndyManager:
         for _ in range(n_indies):
             done = False
             while not done:
-                row_i, col_i = np.random.randint(0,n_row),np.random.randint(0,n_col)
-                done = maze.cells[(row_i, col_i)].state == 'available'  
+                y, x = np.random.randint(0,y_max),np.random.randint(0,x_max)
+                done = maze.cells[(y, x)].state == 'available'  
 
-            self.indies.append(Indy(row_i, col_i, maze, self.available_jobs, self.indy_pos_list, self.cells, self.G, self.G_set)) 
+            self.indies.append(Indy(x, y, maze, self.available_jobs, self.indy_pos_list, self.cells, self.G, self.G_set)) 
 
         self.past_drawable_dicts = []
         self.past_drawable_dicts.append(self.generate_drawable_dict())
