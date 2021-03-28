@@ -7,6 +7,8 @@ try:
 except ModuleNotFoundError:
     print("You need to install networkx. Try the command: pip3 install networkx")
 
+#TODO: Make it so that Indy can't spawn in a wall
+
 class IndyManager:
     def __init__(self, n_row, n_col, maze:Maze, n_indies = 2):
         self.maze = maze

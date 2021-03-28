@@ -1,11 +1,7 @@
 from drawer import Drawer
 from maze import Maze
 from indymanager import IndyManager
-
-try:
-    import cv2
-except ModuleNotFoundError:
-    print("You need to install opencv2. Try the command: pip3 install opencv-python")
+import cv2
     
 
 n = 5
@@ -27,7 +23,7 @@ for dict_ in drawable_dicts:
     if dict_ == drawable_dicts[-1]:
         k = cv2.waitKey(0)
     else:
-        k = cv2.waitKey(10)
+        k = cv2.waitKey(100)
     if k == 27:
         break
 
