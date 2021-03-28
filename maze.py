@@ -21,6 +21,15 @@ class Maze:
             cells = self.update_alive_death(cells, wall_limit, available_limit)
         self.cells = cells
 
+        # Make sure not all cells are walls
+        good_cell_generated = False
+        for cell in cells.values():
+            if cell.state == 'available':
+                good_cell_generated = True
+                break
+        if not good_cell_generated:
+            self.generate_maze()
+
 
     def update_alive_death(self, cells, wall_limit, available_limit):
         new_cells = cells.copy()
