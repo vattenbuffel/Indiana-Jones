@@ -2,7 +2,10 @@ from cell import Cell
 from maze import Maze
 from indy import Indy
 import numpy as np
-import networkx as nx
+try:
+    import networkx as nx
+except ModuleNotFoundError:
+    print("You need to install networkx. Try the command: pip3 install networkx")
 
 class IndyManager:
     def __init__(self, n_row, n_col, maze:Maze, n_indies = 2):

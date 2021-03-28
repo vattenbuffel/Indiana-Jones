@@ -1,13 +1,18 @@
 from drawer import Drawer
 from maze import Maze
 from indymanager import IndyManager
-import cv2
 
-n = 40
+try:
+    import cv2
+except ModuleNotFoundError:
+    print("You need to install opencv2. Try the command: pip3 install opencv-python")
+    
+
+n = 5
 
 maze = Maze(n,n)
-indy_manager = IndyManager(n, n, maze, n_indies=2)
-drawer = Drawer(n,n,3,15,15)
+indy_manager = IndyManager(n, n, maze, n_indies=10)
+drawer = Drawer(n,n,3,50,50)
 
 drawable_dict = maze.generate_drawable_dict()
 maze_img = drawer.generate_image(drawable_dict)
