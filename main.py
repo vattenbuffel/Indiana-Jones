@@ -30,7 +30,7 @@ n_cols = int(2*n_rows)
 maze = Maze(n_cols, n_rows)
 indy_manager = IndyManager(n_cols, n_rows, maze, n_indies=n_indies)
 
-cell_size = 50 if n_rows < 15 else 10
+cell_size = 50 if n_rows < 15 else 20
 drawer = Drawer(n_rows,n_cols,2,cell_size,cell_size)
 
 drawable_dict = maze.generate_drawable_dict()
@@ -50,7 +50,7 @@ for dict_ in updates_drawable_dicts:
     if dict_ == updates_drawable_dicts[-1]:
         k = cv2.waitKey(0)  
     else:
-        k = cv2.waitKey(1)
+        k = cv2.waitKey(100)
     if k == 27:
         break
     
