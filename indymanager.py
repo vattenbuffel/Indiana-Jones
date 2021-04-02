@@ -12,7 +12,7 @@ class IndyManager:
     def __init__(self, x_max, y_max, maze:Maze, n_indies = 2):
         self.maze = maze
         self.available_jobs = []
-        self.indy_pos_list = []
+        self.updated_cells = {}
         self.cells = {location: Cell(*location, "unknown") for location in maze.cells}
 
         
@@ -25,10 +25,12 @@ class IndyManager:
                 y, x = np.random.randint(0,y_max),np.random.randint(0,x_max)
                 done = maze.cells[(y, x)].state == 'available'  
 
-            self.indies.append(Indy(x, y, maze, self.available_jobs, self.indy_pos_list, self.cells, self.G, self.G_set, x_max, y_max)) 
+            self.indies.append(Indy(x, y, maze, self.available_jobs, self.updated_cells, self.cells, self.G, self.G_set, x_max, y_max)) 
 
-        self.past_drawable_dicts = []
-        self.past_drawable_dicts.append(self.generate_drawable_dict())
+        self.first_drawable_dict = {key:'unknown' for key in self.cells}
+        for indy in self.indies:
+            self.first_drawable_dict[(indy.cur_pos[1], indy.cur_pos[0])] = ('indy', indy.dir)
+        self.drawable_dict_updates = []
 
     def run(self):
         while len(self.indies) > 0:
@@ -43,9 +45,10 @@ class IndyManager:
                 del self.indies[i]
 
             
-            self.past_drawable_dicts.append(self.generate_drawable_dict())
+            self.drawable_dict_updates.append(self.updated_cells.copy())
+            self.updated_cells.clear()
 
-    def generate_drawable_dict(self):
+    def generate_drawable_dict_updates(self):
         drawable_dict = {(cell.row, cell.col): cell.state for cell in self.cells.values()}
         for i in range(len(self.indy_pos_list)):
             pos, dir = self.indy_pos_list.pop()

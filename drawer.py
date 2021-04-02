@@ -24,6 +24,8 @@ class Drawer:
         self.wall[:,:] = np.array((24,16,88,255))
         self.unknown = np.zeros((cell_height, cell_width,4), dtype='uint8') 
         self.unknown[:,:] = np.array((0,0,0,255))
+        self.available = np.zeros((cell_height, cell_width,4), dtype='uint8') 
+        self.available[:,:] = np.array((255,255,255,255))
 
     def draw_border(self, img):
         # Add row walls
@@ -40,12 +42,19 @@ class Drawer:
         for col in range(1, self.n_cols+1):
             img[:, col*self.cell_width-self.wall_thickness:col*self.cell_width] = self.black
 
-    def draw_cell(self, img, img_to_draw, row, col):
+    def draw_cell(self, img, img_to_draw, row, col, see_through=True):
         assert row >= 0 and row < self.n_rows and row % 1 == 0, f"Row must be a positive integer smaller than {self.n_rows}. It is {row}."
         assert col >= 0 and col < self.n_cols and col % 1 == 0, f"col must be a positive integer smaller than {self.n_cols}. It is {col}."
         
-        # self.overlay_transparent(img, img_to_draw, row*self.cell_height, col*self.cell_width)
-        self.overlay_transparent(img, img_to_draw, col*self.cell_width, row*self.cell_height)
+        if see_through:
+            self.overlay_transparent(img, img_to_draw, col*self.cell_width, row*self.cell_height)
+        else:
+            self.fill_cell(img, img_to_draw, row*self.cell_height, col*self.cell_width)
+
+    def fill_cell(self, img, img_to_draw, row, col):
+        assert img_to_draw.shape[:2] == (self.cell_height, self.cell_width), f"Img_to_draw must have shape: {(self.cell_height, self.cell_width)}, it has: {img_to_draw.shape}."
+        img[row:row+self.cell_height, col:col+self.cell_height] = img_to_draw[:,:,:3]
+
 
     @staticmethod
     def overlay_transparent(background_img, img_to_overlay_t, x, y, overlay_size=None):
@@ -116,3 +125,33 @@ class Drawer:
 
         self.draw_border(img)
         return img
+
+    def generate_seq_of_imgs(self, updated_cells, img=None):
+        if img is None:
+            img = np.zeros((self.n_rows*self.cell_height, self.n_cols*self.cell_width, 3), dtype='uint8')
+            img[:,:] = self.white
+            self.draw_border(img)
+        
+        for cell in updated_cells:
+            cell_type = updated_cells[cell]
+            
+            if cell_type == 'wall':
+                self.draw_cell(img, self.wall, *cell, see_through=False)
+            elif cell_type == 'available':
+                self.draw_cell(img, self.available, *cell, see_through=False)
+            elif cell_type == 'unknown':
+                self.draw_cell(img, self.unknown, *cell, see_through=False)
+            elif cell_type[0] == 'indy':
+                indy_img_rotated = self.indy
+                if self.indy_rotation_dict[cell_type[1]] is not None:
+                    indy_img_rotated = cv2.rotate(indy_img_rotated, self.indy_rotation_dict[cell_type[1]])
+                self.draw_cell(img, self.available, *cell, see_through=False)
+                self.draw_cell(img, indy_img_rotated, *cell)
+            else:
+                raise Exception("Should never happen.")
+
+        
+        self.draw_border(img)
+        return img
+
+

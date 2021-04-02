@@ -10,12 +10,12 @@ from cell import Cell
 import networkx as nx
 
 class Indy:
-    def __init__(self, start_x, start_y, maze:Maze, available_jobs,  indy_pos_list, cells, G, G_set, x_max, y_max):
+    def __init__(self, start_x, start_y, maze:Maze, available_jobs,  updated_cells, cells, G, G_set, x_max, y_max):
         self.y = start_y
         self.x = start_x
         self.cur_pos = np.array([start_x, start_y])
         self.maze = maze
-        self.indy_pos_list = indy_pos_list
+        self.updated_cells = updated_cells
         self.x_max = x_max
         self.y_max = y_max
         
@@ -29,14 +29,14 @@ class Indy:
         self.update_graph(self.cur_pos)
         self.discover()
 
-        self.indy_pos_list.append((np.flip(self.cur_pos), self.dir))
-        # self.past_drawable_dicts = []
-        # self.past_drawable_dicts.append(self.generate_drawable_dict())
 
     def take_step(self):
         pos = self.path.pop(0)
         self.update_dir(pos)
+        
+        self.updated_cells[(self.cur_pos[1], self.cur_pos[0])] = self.cells[(self.cur_pos[1], self.cur_pos[0])].state
         self.cur_pos = pos
+        self.updated_cells[(self.cur_pos[1], self.cur_pos[0])] = ('indy', self.dir)
 
     def calc_next_goal(self):
         # Prefer to move in order: Ahead, left, right, back, Next_available_job
@@ -165,13 +165,14 @@ class Indy:
 
                 if self.cells[tuple(np.flip(pos))].state == "available":
                     self.update_graph(pos)
-                
+
+                self.updated_cells[(pos[1], pos[0])] = maze_state
+
             except KeyError:
                 pass
         
     def advance(self):
         done = False
-
 
         if len(self.path) == 0:
             done = self.calc_next_goal()
@@ -190,7 +191,6 @@ class Indy:
             self.take_step()
             self.discover()
             
-        self.indy_pos_list.append((np.flip(self.cur_pos), self.dir))
         
         if done:
             pass
