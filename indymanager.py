@@ -25,7 +25,7 @@ class IndyManager:
                 y, x = np.random.randint(0,y_max),np.random.randint(0,x_max)
                 done = maze.cells[(y, x)].state == 'available'  
 
-            self.indies.append(Indy(x, y, maze, self.available_jobs, self.indy_pos_list, self.cells, self.G, self.G_set)) 
+            self.indies.append(Indy(x, y, maze, self.available_jobs, self.indy_pos_list, self.cells, self.G, self.G_set, x_max, y_max)) 
 
         self.past_drawable_dicts = []
         self.past_drawable_dicts.append(self.generate_drawable_dict())

@@ -10,12 +10,14 @@ from cell import Cell
 import networkx as nx
 
 class Indy:
-    def __init__(self, start_x, start_y, maze:Maze, available_jobs,  indy_pos_list, cells, G, G_set):
+    def __init__(self, start_x, start_y, maze:Maze, available_jobs,  indy_pos_list, cells, G, G_set, x_max, y_max):
         self.y = start_y
         self.x = start_x
         self.cur_pos = np.array([start_x, start_y])
         self.maze = maze
         self.indy_pos_list = indy_pos_list
+        self.x_max = x_max
+        self.y_max = y_max
         
         self.dirs_dict = {'S':3*np.pi/2, 'W':2*np.pi/2, 'N':1*np.pi/2, 'E':0}
         self.dir = np.random.choice(['S','N','W','E'])
@@ -109,6 +111,7 @@ class Indy:
         available_jobs_set = set([tuple(job) for job in self.available_jobs])
         edges = nx.bfs_edges(self.G, tuple(self.cur_pos))
         nodes = [v for u, v in edges]
+        nodes.reverse()
         best_goal = None
         for node in nodes:
             if node in available_jobs_set:
@@ -117,7 +120,6 @@ class Indy:
         if best_goal is None:
             return False
 
-        # best_goal_i = nodes.index(best_goal)
         best_goal_i = [i for i in range(len(self.available_jobs)) if np.all(self.available_jobs[i]==np.array(best_goal))][0]
         shortest_path = nx.dijkstra_path(self.G, tuple(self.cur_pos), best_goal)
         assert np.all(np.abs(np.sum(np.diff(shortest_path, axis=0), axis=1)) == 1), f"The distance between all nodes in the path must be 1."
@@ -148,10 +150,9 @@ class Indy:
         states = []
 
         for pos in positions_to_check:
-            try:
-                states.append(self.cells[tuple(np.flip(pos))].state)
-            except KeyError:
-                pass
+            if pos[0] < 0 or pos[0] >= self.x_max or pos[1] < 0 or pos[1] >= self.y_max:
+                continue
+            states.append(self.cells[tuple(np.flip(pos))].state)
         
         return np.array(states)
 

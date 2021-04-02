@@ -2,7 +2,7 @@ from drawer import Drawer
 from maze import Maze
 from indymanager import IndyManager
 import cv2
-    
+
 print("Hello!\nHow big should the sides of the maze be? \nside = ", end="")
 n_rows = input()
 try:
