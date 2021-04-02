@@ -1,4 +1,5 @@
 import multiprocessing
+from networkx.algorithms.shortest_paths.generic import shortest_path
 
 from networkx.exception import NetworkXNoPath
 from drawer import Drawer
@@ -83,9 +84,8 @@ class Indy:
         potential_neighbours = node + np.array([[1,0], [0,1], [-1,0], [0,-1]])
         for node_ in potential_neighbours:
             if tuple(node_) in self.G_set:
-                if np.sum(np.abs(node-node_)) == 1:
-                    self.G.add_edge(tuple(node), tuple(node_))
-                    self.G.add_edge(tuple(node_), tuple(node))
+                self.G.add_edge(tuple(node), tuple(node_))
+                self.G.add_edge(tuple(node_), tuple(node))
 
     def find_next_job(self):
         # Start by clearing all the jobs which are already done, i.e. those cells which have already been visited
@@ -106,26 +106,23 @@ class Indy:
 
         
         # Find the closest next job
-        shortest_path = None
-        shortest_dist = 1e10
-        best_goal_i = None
-
-        for i, goal in enumerate(self.available_jobs):
-            euclidian_dist = np.linalg.norm(goal - self.cur_pos)
-            if euclidian_dist < shortest_dist:
-                try:
-                    path = nx.dijkstra_path(self.G, tuple(self.cur_pos), tuple(goal))
-                except NetworkXNoPath:
-                    continue
-                dist = len(path)
-                if dist < shortest_dist:
-                    shortest_path = path
-                    best_goal_i = i
-                    shortest_dist = dist
+        available_jobs_set = set([tuple(job) for job in self.available_jobs])
+        edges = nx.bfs_edges(self.G, tuple(self.cur_pos))
+        nodes = [v for u, v in edges]
+        best_goal = None
+        for node in nodes:
+            if node in available_jobs_set:
+                best_goal = node
         
-        if best_goal_i is None:
+        if best_goal is None:
             return False
-            
+
+        # best_goal_i = nodes.index(best_goal)
+        best_goal_i = [i for i in range(len(self.available_jobs)) if np.all(self.available_jobs[i]==np.array(best_goal))][0]
+        shortest_path = nx.dijkstra_path(self.G, tuple(self.cur_pos), best_goal)
+        assert np.all(np.abs(np.sum(np.diff(shortest_path, axis=0), axis=1)) == 1), f"The distance between all nodes in the path must be 1."
+
+
         del self.available_jobs[best_goal_i]
         return np.array(shortest_path) 
 
@@ -183,6 +180,7 @@ class Indy:
             # Check if the current goal is obsolete
             state_of_goal_neighbours = self.states_of_neighbours(self.path[-1])
             if not np.any(state_of_goal_neighbours == 'unknown'):
+                self.path = []
                 done = self.calc_next_goal()
                 if len(self.path) == 0: 
                     done = True
