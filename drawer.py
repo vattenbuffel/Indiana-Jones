@@ -5,6 +5,7 @@ except ModuleNotFoundError:
     exit(0)
 import numpy as np
 
+
 class Drawer:
     def __init__(self, n_rows, n_cols, wall_thickness, cell_height, cell_width, cell_types=None):
         self.n_rows = n_rows
