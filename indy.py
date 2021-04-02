@@ -110,15 +110,17 @@ class Indy:
         best_goal_i = None
 
         for i, goal in enumerate(self.available_jobs):
-            try:
-                path = nx.dijkstra_path(self.G, tuple(self.cur_pos), tuple(goal))
-            except NetworkXNoPath:
-                continue
-            dist = len(path)
-            if dist < shortest_dist:
-                shortest_path = path
-                best_goal_i = i
-                shortest_dist = dist
+            euclidian_dist = np.linalg.norm(goal - self.cur_pos)
+            if euclidian_dist < shortest_dist:
+                try:
+                    path = nx.dijkstra_path(self.G, tuple(self.cur_pos), tuple(goal))
+                except NetworkXNoPath:
+                    continue
+                dist = len(path)
+                if dist < shortest_dist:
+                    shortest_path = path
+                    best_goal_i = i
+                    shortest_dist = dist
         
         if best_goal_i is None:
             return False
