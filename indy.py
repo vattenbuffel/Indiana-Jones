@@ -80,11 +80,12 @@ class Indy:
         self.G_set.add(tuple(node))
 
         self.G.add_node(tuple(node))
-        for node_ in self.G_set:
-            node_ = np.array(node_)
-            if np.sum(np.abs(node-node_)) == 1:
-                self.G.add_edge(tuple(node), tuple(node_))
-                self.G.add_edge(tuple(node_), tuple(node))
+        potential_neighbours = node + np.array([[1,0], [0,1], [-1,0], [0,-1]])
+        for node_ in potential_neighbours:
+            if tuple(node_) in self.G_set:
+                if np.sum(np.abs(node-node_)) == 1:
+                    self.G.add_edge(tuple(node), tuple(node_))
+                    self.G.add_edge(tuple(node_), tuple(node))
 
     def find_next_job(self):
         # Start by clearing all the jobs which are already done, i.e. those cells which have already been visited
