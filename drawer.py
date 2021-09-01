@@ -2,7 +2,7 @@ try:
     import cv2
 except ModuleNotFoundError:
     print("You need to install opencv2. Try the command: pip3 install opencv-python")
-    exit(0)
+    exit(5)
 import numpy as np
 
 
